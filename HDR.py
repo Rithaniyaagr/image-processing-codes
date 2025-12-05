@@ -1,0 +1,55 @@
+import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.image import imread, imsave
+
+# ----------------------------
+# Load the image
+# ----------------------------
+image_path = r"C:\Users\Admin\Downloads\HDR_image.png"
+img = imread(image_path)
+
+# Ensure the image is in float format (0-1)
+if img.dtype != np.float32 and img.dtype != np.float64:
+    img = img.astype(np.float32) / 255.0
+
+# ----------------------------
+# Apply HDR-like effect
+# ----------------------------
+# Step 1: Gamma correction to simulate exposure adjustment
+gamma = 2.2
+img_gamma = np.power(img, 1/gamma)
+
+# Step 2: Simple local contrast enhancement using normalization
+min_val = img_gamma.min(axis=(0,1), keepdims=True)
+max_val = img_gamma.max(axis=(0,1), keepdims=True)
+img_enhanced = (img_gamma - min_val) / (max_val - min_val + 1e-8)  # normalize 0-1
+
+# Step 3: Scale to 0-255 for saving
+ldr = (img_enhanced * 255).astype(np.uint8)
+
+# ----------------------------
+# Display original and HDR-like image side by side
+# ----------------------------
+plt.figure(figsize=(12,6))
+
+# Original
+plt.subplot(1,2,1)
+plt.imshow(img)
+plt.title('Original Image')
+plt.axis('off')
+
+# HDR-like
+plt.subplot(1,2,2)
+plt.imshow(ldr)
+plt.title('HDR-like Image')
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# ----------------------------
+# Save the HDR-like result
+# ----------------------------
+output_path = r"C:\Users\Admin\Downloads\HDR_tonemapped_numpy.png"
+imsave(output_path, ldr)
+print(f"HDR-like image saved at: {output_path}")
